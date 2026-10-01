@@ -8,8 +8,8 @@ repository.workspace = true
 description = "Bitty observability - metrics, tracing, and telemetry"
 
 [dependencies]
-bitty-observability-api = { path = "../bitty-observability-api" }
-bitty-observability-core = { path = "../bitty-observability-core" }
+bitty-observability-api = { path = "../bitty-observability-api", version = "0.0.1" }
+bitty-observability-core = { path = "../bitty-observability-core", version = "0.0.1" }
 
 [features]
 default = []
