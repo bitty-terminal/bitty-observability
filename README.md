@@ -1,28 +1,40 @@
 # bitty-observability
 
-**Observability API definitions for the Bitty terminal platform.**
+Bitty L1 Rust Core Extension: observability API contracts for event tracing,
+filtering, and payload redaction across the terminal runtime and plugin
+ecosystem.
 
-This repository provides the foundational API contracts for observability capabilities in Bitty, supporting metrics collection, structured logging, and distributed tracing across the terminal runtime and plugin ecosystem.
+## Architecture
 
-## Repository Structure
+```text
+bitty-observability-api    # Pure types and traits (zero runtime dependencies)
+    ↑
+bitty-observability-core   # Shared implementation (filters, buffers, redaction)
+    ↑
+bitty-observability        # Facade crate re-exporting both layers
+```
 
-- **`bitty-observability-api`**: Core API definitions and traits (zero runtime dependencies)
-- **`bitty-observability`**: Main crate re-exporting all APIs
+### Crates
+
+- **`bitty-observability-api`** — Pure types with zero implementation
+  dependencies: `ObservabilityCapability` (debug.inspect/trace/control),
+  `EventKind`/`ObservableEvent`, `TraceConfig`/`TraceRecord`. This is the only
+  crate plugins and cross-repo consumers depend on for API contracts.
+- **`bitty-observability-core`** — Shared implementation: `EventFilter`
+  (exact/prefix pattern matching), `TraceBuffer` (bounded ring buffer with
+  drop counting), `redact_payload` (allowlist-based field redaction).
+- **`bitty-observability`** — Facade crate re-exporting the API and core
+  layers under a single dependency.
 
 ## Status
 
-**Pre-alpha** — API definitions only, no implementation yet. `bitty-ipc` has
-already been extracted from Bitty Core as an independent repository
+**Pre-1.0, API and shared implementation only.** `bitty-ipc` has already been
+extracted from Bitty Core as an independent repository
 ([bitty-terminal/bitty-ipc](https://github.com/bitty-terminal/bitty-ipc),
-CTX-1585); this repository is not yet consumed by `bitty-ipc` or any other
-Bitty repository.
-
-## Features
-
-- **Metrics API**: Counter, gauge, histogram abstractions for performance monitoring
-- **Logging API**: Structured logging with levels, context, and filtering
-- **Tracing API**: Distributed tracing spans for request/operation tracking
-- **Zero Dependencies**: API crate has no runtime dependencies for maximum compatibility
+CTX-1585); this repository is not yet consumed by `bitty-ipc`, `bitty`, or any
+other Bitty repository. Runtime integration (wiring these types into the
+terminal core or a plugin) lives outside this repository and is not yet
+scheduled.
 
 ## Usage
 
@@ -32,14 +44,13 @@ bitty-observability = "0.0.1"
 ```
 
 ```rust
-use bitty_observability::{MetricsCollector, LogLevel};
+use bitty_observability::{EventFilter, EventKind, ObservableEvent, TraceBuffer};
 
-// Metrics
-collector.increment_counter("plugin.loaded", 1);
-collector.record_histogram("request.latency_ms", duration_ms);
+let filter = EventFilter::new("terminal.*");
+assert!(filter.matches("terminal.opened"));
 
-// Logging
-log(LogLevel::Info, "plugin.lifecycle", "Plugin activated");
+let event = ObservableEvent::new(EventKind::new("terminal.opened"), 1);
+let mut buffer = TraceBuffer::new(1000);
 ```
 
 ## Development
@@ -47,7 +58,7 @@ log(LogLevel::Info, "plugin.lifecycle", "Plugin activated");
 ### Prerequisites
 
 - Rust 1.85+ (MSRV)
-- just 1.58.0+
+- `just` 1.58.0+
 
 ### Quality Gates
 
@@ -74,4 +85,5 @@ MIT
 ## Related Projects
 
 - [bitty](https://github.com/bitty-terminal/bitty) — Bitty terminal core
-- [bitty-ipc](https://github.com/bitty-terminal/bitty-ipc) — IPC layer (independent repository since CTX-1585)
+- [bitty-ipc](https://github.com/bitty-terminal/bitty-ipc) — IPC layer
+  (independent repository since CTX-1585)
