@@ -1,0 +1,16 @@
+[repo]
+name = "bitty-observability"
+kind = "lib"
+lang = "rust"
+role = "api"
+owner = "bitty-core"
+docs = "bitty-terminal-docs"
+
+[contracts]
+
+[contracts.provides]
+# Observability API definitions for metrics, logging, and tracing
+observability-api = "0.0.1"
+
+[contracts.consumes]
+# No external dependencies (zero-dependency API crate)

@@ -1,0 +1,29 @@
+# Supply-chain approval for bitty-observability.
+#
+# This is an API-only crate with minimal dependencies (serde, serde_json).
+# Run `cargo deny check` to verify; CI enforces it (Supply chain job).
+
+[graph]
+features = []
+
+[advisories]
+yanked = "deny"
+
+[licenses]
+allow = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
