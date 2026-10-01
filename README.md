@@ -11,7 +11,11 @@ This repository provides the foundational API contracts for observability capabi
 
 ## Status
 
-**Pre-alpha** — API definitions only. Implementation pending bitty-ipc extraction (tracked in bitty-terminal Core).
+**Pre-alpha** — API definitions only, no implementation yet. `bitty-ipc` has
+already been extracted from Bitty Core as an independent repository
+([bitty-terminal/bitty-ipc](https://github.com/bitty-terminal/bitty-ipc),
+CTX-1585); this repository is not yet consumed by `bitty-ipc` or any other
+Bitty repository.
 
 ## Features
 
@@ -70,4 +74,4 @@ MIT
 ## Related Projects
 
 - [bitty](https://github.com/bitty-terminal/bitty) — Bitty terminal core
-- [bitty-ipc](https://github.com/bitty-terminal/bitty-ipc) — IPC layer (pending extraction)
+- [bitty-ipc](https://github.com/bitty-terminal/bitty-ipc) — IPC layer (independent repository since CTX-1585)
