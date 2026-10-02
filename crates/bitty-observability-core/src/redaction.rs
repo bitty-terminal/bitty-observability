@@ -4,7 +4,7 @@
 /// default: a newly added attribute is sensitive until it is explicitly
 /// classified otherwise, and raw PTY bytes, clipboard content, and raw
 /// environment data are never captured by default.
-use bitty_observability_api::{AttributeValue, Observation};
+use bitty_observability_api::{AttributeValue, Observation, RecordStatus};
 use std::collections::BTreeMap;
 
 /// Field names that are never captured by default.
@@ -64,6 +64,9 @@ pub fn redact_observation(observation: &Observation, non_sensitive_fields: &[&st
     );
     if let Some(attribution) = &observation.attribution {
         redacted = redacted.with_attribution(attribution.clone());
+    }
+    if observation.status() == RecordStatus::Truncated {
+        redacted.mark_truncated();
     }
 
     for (key, value) in observation.attributes() {
@@ -181,5 +184,15 @@ mod tests {
         assert!(!classify_field("new_field", &["new_field"]).is_sensitive());
         assert!(!is_captured_by_default("pty.raw"));
         assert!(is_captured_by_default("terminal.opened"));
+    }
+
+    #[test]
+    fn truncation_status_is_preserved_by_redaction() {
+        let mut observation = observation_with(&[("terminal.opened", "ok")]);
+        observation.mark_truncated();
+
+        let redacted = redact_observation(&observation, &["terminal.opened"]);
+
+        assert_eq!(redacted.status(), RecordStatus::Truncated);
     }
 }
