@@ -1,6 +1,6 @@
 # Supply-chain approval for bitty-observability.
 #
-# This is an API-only crate with minimal dependencies (serde, serde_json).
+# The workspace has no external dependencies (zero-dependency API guarantee).
 # Run `cargo deny check` to verify; CI enforces it (Supply chain job).
 
 [graph]

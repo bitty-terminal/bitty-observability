@@ -1,16 +1,16 @@
+# bitty-observability: workspace identity descriptor (kind/lang/role mirror workspace.toml).
 [repo]
 name = "bitty-observability"
-kind = "lib"
+kind = "extension"
 lang = "rust"
-role = "api"
+role = "L1 Rust Core Extension: observability and tracing infrastructure (API + Core + integration)"
 owner = "bitty-core"
 docs = "bitty-terminal-docs"
 
-[contracts]
-
 [contracts.provides]
-# Observability API definitions for metrics, logging, and tracing
-observability-api = "0.0.1"
+observability-api = "crates/bitty-observability-api" # light contract: Observation/ObservationSink/Subscription/gate defs, zero dependencies
+observability-core = "crates/bitty-observability-core" # bounded buffer, filtering, and emission-time redaction helpers
+observability = "crates/bitty-observability" # umbrella crate: re-exports the API and core layers
 
 [contracts.consumes]
-# No external dependencies (zero-dependency API crate)
+observability-boundary = "bitty-docs: W-71" # accepted Core observation seam, gate, redaction, and bounds (ADR-0015 Boundary 1)

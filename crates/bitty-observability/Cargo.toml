@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Bitty observability - metrics, tracing, and telemetry"
+description = "Bitty observability - bounded observation seam, redaction, and trace buffers"
 
 [dependencies]
 bitty-observability-api = { path = "../bitty-observability-api", version = "0.0.1" }
