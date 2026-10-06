@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quality gates: fmt, clippy, tests, supply-chain audit
 - CI: Linux, Windows, macOS, MSRV 1.85 checks
 
+### Fixed
+
+- `just supply-chain` now runs `cargo deny check` (auto-discovers `deny.toml`
+  at the repo root); the previous `cargo deny check --config deny.toml`
+  argument order is rejected by cargo-deny 0.20.2.
+
 ## [0.0.1] - 2026-10-02
 
 Initial release with API definitions only. Implementation pending.
