@@ -14,7 +14,7 @@ repository**. The Core observation seam and its authorization gate, redaction
 rules, and bounds are retained by Core (bitty-docs `W-71`); establishing them in
 the host is the separate `W-100` task. Nothing here is integrated with Core, and
 this repository makes no Core-integration claim. Runtime integration lives
-outside this repository and is not yet scheduled.
+outside this repository; host adoption is the separate `W-100` task.
 
 ## Architecture
 
@@ -64,7 +64,7 @@ The repository tracks the accepted Core observability contract (bitty-docs
   environment data, and raw input (`DEFAULT_DENIED_FIELDS`) are never captured,
   even when allowlisted.
 - **Bounds and explicit loss.** `BufferLimits` fixes a maximum record size,
-  records in flight, and a total in-memory budget. Non-critical records drop
+  records in flight, and a total in-memory budget. Records drop
   oldest-first, truncation is marked on the record, and every loss is surfaced
   through `DropReport`. An inert buffer (no observer) stores nothing, and no
   persistence, file writer, network exporter, or metrics pipeline exists here.

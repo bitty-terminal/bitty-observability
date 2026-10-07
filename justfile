@@ -17,7 +17,7 @@ typecheck:
     cargo check --workspace --all-targets --locked
 
 supply-chain:
-    cargo deny check --config deny.toml
+    cargo deny check
 
 actionlint:
     actionlint -color
