@@ -26,6 +26,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `ObservationSink` read-only sink trait and bounded, detachable `Subscription`.
+- `ObservationHost` trait in `bitty-observability-api`: the host side of the
+  read-only observation seam (what Core would push via `emit`, what a consumer
+  reads via `drain_to` into its `ObservationSink`, and the bounds), re-exported
+  by the facade crate.
+- Seam conformance suite (`crates/bitty-observability/tests/seam_conformance.rs`)
+  proving the contract against a fake host, producer, and sink: fail-closed
+  attach, consent gating, redaction at emission, explicit oldest-first drops
+  and truncation, ordered delivery, detach notification, and inert behavior.
+- Recorded disposition for the dead Core network counters
+  (`network_rx_bytes` / `network_tx_bytes`): drop Core-side, not moved here;
+  this repository provides no operating-system metrics sampling.
 - Default-deny `AuthorizationGate` with separate inspect/subscribe grants and
   out-of-process consent.
 - Fail-closed contract `ContractVersion` / `ContractRange` negotiation.
