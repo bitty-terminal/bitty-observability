@@ -26,9 +26,9 @@ pub use bitty_observability_core as core;
 
 pub use api::{
     AttributeValue, Attribution, AuthorizationError, AuthorizationGate, ContractRange,
-    ContractVersion, DropReport, EventKind, ObservabilityCapability, Observation, ObservationSink,
-    ObserverOrigin, RecordStatus, Subscription, SubscriptionError, TraceConfig, TraceRecord,
-    subscribe,
+    ContractVersion, DropReport, EventKind, ObservabilityCapability, Observation, ObservationHost,
+    ObservationSink, ObserverOrigin, RecordStatus, Subscription, SubscriptionError, TraceConfig,
+    TraceRecord, subscribe,
 };
 pub use core::{
     BufferLimits, DEFAULT_DENIED_FIELDS, EventFilter, PushOutcome, Sensitivity, TraceBuffer,

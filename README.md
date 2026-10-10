@@ -47,6 +47,40 @@ bitty-observability        # Facade crate re-exporting both layers
 - **`bitty-observability`** — facade crate re-exporting the API and core
   layers under a single dependency.
 
+### Observation seam contract
+
+The host side of the seam is the `ObservationHost` trait
+(`bitty-observability-api`): what Core would push (`emit` of one bounded
+`Observation` per boundary event, redacted at emission), what a consumer reads
+(`drain_to` into its `ObservationSink`, with `DropReport` loss reporting and
+`on_detached` teardown), and the bounds (record construction bounds,
+per-subscription in-flight limit, drop-oldest discipline, inert with no
+observer, fail-closed version attach through `subscribe` plus admission
+re-check). The `crates/bitty-observability/tests/seam_conformance.rs` suite
+proves the contract against a fake host, producer, and sink: fail-closed
+attach, redaction at emission, explicit oldest-first drops, ordered delivery,
+detach notification, and inert behavior.
+
+### Network-counter disposition
+
+The dead Core network counters (`MetricsSnapshot::network_rx_bytes` /
+`network_tx_bytes`, sampled by `SystemMetricsService`) are **dropped
+Core-side, not moved here**:
+
+- no producer exists: only the test fake implements `MetricsAdapter`, and
+  nothing feeds `StatusInputs::network_summary`, so the status `network`
+  module only renders missing data;
+- wrong layer: the counters sample the operating system, not a Core-owned
+  mechanism, while the `W-71` seam observes Core mechanisms and this workspace
+  is zero-dependency with no filesystem or network access;
+- parked policy: metrics aggregation and export stay parked to `W-110` behind
+  the opt-in gate, so moving the counters now would pre-empt that design.
+
+This repository therefore provides no operating-system metrics sampling. If
+`W-110` later designs an opt-in metrics pipeline, it emits bounded
+`Observation` records through this same seam instead of reviving raw counters.
+The Core-side removal is a Core follow-up referenced from #1629.
+
 ## Accepted-contract alignment
 
 The repository tracks the accepted Core observability contract (bitty-docs
