@@ -78,7 +78,7 @@ jobs:
           set -euo pipefail
           snapshot_ref=refs/remotes/origin/carryctx-snapshots
           if ! git rev-parse --verify -q "$snapshot_ref" >/dev/null; then
-            echo "::notice title=CarryCtx snapshot::refs/heads/carryctx-snapshots is not published yet; run 'just workflow-publish' during merge closeout (informational; the scheduled staleness check enforces)."
+            echo "::notice title=CarryCtx snapshot::refs/heads/carryctx-snapshots is not published yet; run 'just workflow-publish' during merge closeout (informational; absence is tolerated until publication)."
             exit 0
           fi
           main_sha="$(git rev-parse refs/remotes/origin/main)"
