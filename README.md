@@ -6,15 +6,10 @@ implementation side of observability; it holds no authority.
 
 ## Status
 
-**Pre-1.0, API and shared implementation only.** All three crates are version
-`0.0.1` and provide no stability guarantee before the `0.1.0` release.
+**Pre-1.0: `bitty-observability-api` is the active Core contract crate; `bitty-observability-core` and `bitty-observability` are non-product reference implementations.** All three crates are version `0.0.1` and provide no stability guarantee before the `0.1.0` release.
 
-This repository is **not consumed by `bitty` (Bitty Core) or by any other Bitty
-repository**. The Core observation seam and its authorization gate, redaction
-rules, and bounds are retained by Core (bitty-docs `W-71`); establishing them in
-the host is the separate `W-100` task. Nothing here is integrated with Core, and
-this repository makes no Core-integration claim. Runtime integration lives
-outside this repository; host adoption is the separate `W-100` task.
+- **`bitty-observability-api` (product contract, owned by `bitty-core`):** Linked directly by the `bitty-terminal` composition root (`W-110` slice 2) as the canonical zero-dependency `W-71` contract for `AuthorizationGate`, `ObservabilityCapability`, `ObserverOrigin`, `ContractRange`, `ContractVersion`, `subscribe`, and the `MAX_OBSERVATION_*` / `DEFAULT_MAX_*` bounds.
+- **`bitty-observability-core` and `bitty-observability` (non-product reference implementations, parked until `W-100` / `W-110` removal gates):** Not linked by `bitty` product builds or any other repository. They implement and conformance-test the record-level `TraceBuffer`, `EventFilter`, and emission-time field redaction rules (`redact_observation`, `redact_payload`) required by `W-71` without adding runtime or dependency weight to default `bitty` builds. Host adoption of record-level producers and retirement of the transitional `bitty-runtime` `DebugView` / `TraceHub` remain gated on `W-100` / `W-110`.
 
 ## Architecture
 
@@ -184,10 +179,13 @@ they do not block the current alignment:
 - whether the DevTools `debug.trace` path consumes this seam, without changing
   the accepted DevTools contract (`W-110` and the DevTools owner).
 
-Core-integration evidence cannot be produced from this repository alone: no
-Core or first-party caller consumes these crates, host adoption of the retained
-seam is the separate `W-100` task, and the accepted contract's removal gates
-(including the caller audit) remain unsatisfied by design.
+Record-producer integration evidence cannot be produced from this repository
+alone: while `bitty-terminal` consumes `bitty-observability-api` as the
+zero-dependency contract, no Core or first-party caller links the non-product
+`bitty-observability-core` / `bitty-observability` reference crates yet. Host
+adoption of record-level producers is the separate `W-100` task, and the
+accepted contract's removal gates (including the caller audit) remain
+unsatisfied by design.
 
 ## License
 

@@ -84,7 +84,9 @@ pub fn redact_observation(observation: &Observation, non_sensitive_fields: &[&st
 
 /// Redacts sensitive fields from a payload.
 ///
-/// Removes all fields except those in the allowlist.
+/// Removes all fields except those in the allowlist that are also permitted by
+/// [`is_captured_by_default`] (fields in [`DEFAULT_DENIED_FIELDS`] are never
+/// captured even when allowlisted).
 pub fn redact_payload(
     payload: &BTreeMap<String, String>,
     allowed_fields: &[&str],
@@ -92,8 +94,11 @@ pub fn redact_payload(
     let mut redacted = BTreeMap::new();
 
     for field in allowed_fields {
+        if !is_captured_by_default(field) {
+            continue;
+        }
         if let Some(value) = payload.get(*field) {
-            redacted.insert(field.to_string(), value.clone());
+            redacted.insert((*field).to_string(), value.clone());
         }
     }
 
@@ -139,6 +144,24 @@ mod tests {
 
         assert_eq!(redacted.len(), 1);
         assert_eq!(redacted.get("redacted").unwrap(), "true");
+    }
+
+    #[test]
+    fn redact_payload_never_captures_default_denied_fields() {
+        let mut payload = BTreeMap::new();
+        payload.insert("pty.raw".into(), "raw-bytes".into());
+        payload.insert("clipboard".into(), "clipboard-secret".into());
+        payload.insert("env.raw".into(), "API_KEY=leaked".into());
+        payload.insert("input.raw".into(), "hunter2".into());
+
+        let redacted = redact_payload(&payload, &["pty.raw", "clipboard", "env.raw", "input.raw"]);
+
+        assert_eq!(redacted.len(), 1);
+        assert_eq!(redacted.get("redacted"), Some(&"true".to_string()));
+        assert!(!format!("{redacted:?}").contains("raw-bytes"));
+        assert!(!format!("{redacted:?}").contains("clipboard-secret"));
+        assert!(!format!("{redacted:?}").contains("leaked"));
+        assert!(!format!("{redacted:?}").contains("hunter2"));
     }
 
     #[test]

@@ -7,10 +7,19 @@ role = "L1 Rust Core Extension: observability and tracing infrastructure (API + 
 owner = "bitty-core"
 docs = "bitty-terminal-docs"
 
+[bootstrap]
+version = "0.0.1"
+edition = "2024"
+rust_version = "1.85"
+status = "bitty-observability-api consumed by bitty-terminal composition root (W-110 slice 2); bitty-observability-core and bitty-observability facade are non-product reference implementations parked until W-100/W-110 removal gates"
+
+[contracts]
+status = "W-71 accepted; bitty-observability-api owned by bitty-core and linked by bitty-terminal; bitty-observability-core and bitty-observability are non-product reference implementations"
+
 [contracts.provides]
-observability-api = "crates/bitty-observability-api" # light contract: Observation/ObservationSink/Subscription/gate defs, zero dependencies
-observability-core = "crates/bitty-observability-core" # bounded buffer, filtering, and emission-time redaction helpers
-observability = "crates/bitty-observability" # umbrella crate: re-exports the API and core layers
+observability-api = "crates/bitty-observability-api" # light contract: Observation/ObservationSink/Subscription/gate defs, zero dependencies (linked by bitty-terminal)
+observability-core = "crates/bitty-observability-core" # non-product reference implementation: bounded buffer, filtering, and emission-time redaction helpers
+observability = "crates/bitty-observability" # non-product facade crate: re-exports the API and core reference layers
 
 [contracts.consumes]
 observability-boundary = "bitty-docs: W-71" # accepted Core observation seam, gate, redaction, and bounds (ADR-0015 Boundary 1)
