@@ -5,7 +5,8 @@
 /// dropped oldest-first, truncations are explicit, and an inert buffer (no
 /// observer attached) stores nothing.
 use bitty_observability_api::{
-    DEFAULT_MAX_RECORD_BYTES, DEFAULT_MAX_RECORDS, DEFAULT_MAX_TOTAL_BYTES, DropReport, Observation,
+    DEFAULT_MAX_RECORD_BYTES, DEFAULT_MAX_RECORDS, DEFAULT_MAX_TOTAL_BYTES, DropReport,
+    Observation, RecordStatus,
 };
 use std::collections::VecDeque;
 
@@ -110,7 +111,7 @@ impl TraceBuffer {
             return PushOutcome::Inert;
         }
 
-        let mut truncated = false;
+        let mut truncated = record.status() == RecordStatus::Truncated;
         if record.size_hint() > self.limits.max_record_bytes {
             if !record.enforce_size_bound(self.limits.max_record_bytes) {
                 self.report.rejected = self.report.rejected.saturating_add(1);
@@ -281,5 +282,25 @@ mod tests {
         assert!(buffer.is_empty());
         assert_eq!(buffer.report().rejected, 1);
         assert_eq!(buffer.report().truncated, 0);
+    }
+
+    #[test]
+    fn construction_truncated_record_is_counted_in_drop_report() {
+        let mut buffer = TraceBuffer::new(BufferLimits::default());
+        let mut record = Observation::new(EventKind::new("terminal.opened"), 1);
+        record.insert_attribute(
+            "detail",
+            AttributeValue::Text(
+                "x".repeat(bitty_observability_api::event::MAX_ATTRIBUTE_TEXT_LEN + 64),
+            ),
+        );
+        assert_eq!(record.status(), RecordStatus::Truncated);
+        assert!(record.size_hint() <= DEFAULT_MAX_RECORD_BYTES);
+
+        assert_eq!(buffer.push(record), PushOutcome::Truncated);
+        let (records, report) = buffer.drain();
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].status(), RecordStatus::Truncated);
+        assert_eq!(report.truncated, 1);
     }
 }

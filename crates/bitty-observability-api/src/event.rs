@@ -253,8 +253,22 @@ impl Observation {
         }
     }
 
-    /// Sets the plugin or subsystem attribution.
+    /// Sets the plugin or subsystem attribution, bounding its identifier to
+    /// [`MAX_KEY_LEN`] bytes and marking the record truncated if shortened.
     pub fn with_attribution(mut self, attribution: Attribution) -> Self {
+        let (attribution, truncated) = match attribution {
+            Attribution::Subsystem(name) => {
+                let (bounded, truncated) = truncate_chars(name, MAX_KEY_LEN);
+                (Attribution::Subsystem(bounded), truncated)
+            }
+            Attribution::Plugin(id) => {
+                let (bounded, truncated) = truncate_chars(id, MAX_KEY_LEN);
+                (Attribution::Plugin(bounded), truncated)
+            }
+        };
+        if truncated {
+            self.status = RecordStatus::Truncated;
+        }
         self.attribution = Some(attribution);
         self
     }
@@ -426,5 +440,16 @@ mod tests {
         assert_eq!(left.rejected, 4);
         assert_eq!(left.total(), 8);
         assert!(!left.is_empty());
+    }
+
+    #[test]
+    fn oversized_attribution_variant_is_bounded_and_marks_truncated() {
+        let observation = Observation::new(EventKind::new("plugin.activated"), 1)
+            .with_attribution(Attribution::Plugin("p".repeat(MAX_KEY_LEN + 32)));
+        assert_eq!(
+            observation.attribution.as_ref().unwrap().name().len(),
+            MAX_KEY_LEN
+        );
+        assert_eq!(observation.status(), RecordStatus::Truncated);
     }
 }
