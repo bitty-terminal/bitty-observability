@@ -117,13 +117,16 @@ impl TraceBuffer {
                 return PushOutcome::Rejected;
             }
             truncated = true;
-            self.report.truncated = self.report.truncated.saturating_add(1);
         }
 
         let record_bytes = record.size_hint();
         if record_bytes > self.limits.max_total_bytes {
             self.report.rejected = self.report.rejected.saturating_add(1);
             return PushOutcome::Rejected;
+        }
+
+        if truncated {
+            self.report.truncated = self.report.truncated.saturating_add(1);
         }
 
         let mut evicted = false;
@@ -265,5 +268,18 @@ mod tests {
         );
         assert!(buffer.is_empty());
         assert_eq!(buffer.report().rejected, 1);
+    }
+
+    #[test]
+    fn truncated_record_still_exceeding_total_budget_counts_only_as_rejected() {
+        let mut buffer = TraceBuffer::new(BufferLimits::new(8, 64, 16));
+
+        assert_eq!(
+            buffer.push(record_with_padding("huge", 1, 200)),
+            PushOutcome::Rejected
+        );
+        assert!(buffer.is_empty());
+        assert_eq!(buffer.report().rejected, 1);
+        assert_eq!(buffer.report().truncated, 0);
     }
 }
